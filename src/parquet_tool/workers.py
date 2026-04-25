@@ -141,13 +141,19 @@ class DistributionWorker(QThread):
         self._pf = pf
         self._column_name = column_name
         self._top_n = top_n
+        self._cancelled = False
+
+    def cancel(self):
+        self._cancelled = True
 
     def run(self):
         try:
             dist = self._pf.get_value_distribution(self._column_name, self._top_n)
-            self.result.emit(dist)
+            if not self._cancelled:
+                self.result.emit(dist)
         except Exception as e:
-            self.error.emit(str(e))
+            if not self._cancelled:
+                self.error.emit(str(e))
         finally:
             self._pf = None
 
