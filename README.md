@@ -153,4 +153,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for full dev setup, PR guidelines, and re
 
 ## License
 
-[MIT](LICENSE) (c) 2026 Maksym Tymoshyk.
+[MIT](LICENSE)
