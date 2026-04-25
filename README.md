@@ -53,6 +53,12 @@ Side-by-side schema compare with color-coded ADDED / REMOVED / CHANGED rows.
 
 ![Schema diff](docs/screenshots/schema-diff.png)
 
+### File menu
+
+Native macOS menu bar with Open / Recent Files / Compare Schemas / Export to CSV.
+
+![File menu](docs/screenshots/file-menu.png)
+
 ## Install
 
 ```bash
