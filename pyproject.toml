@@ -30,6 +30,9 @@ classifiers = [
 dependencies = [
     "PyQt6>=6.4.0",
     "pyarrow>=14.0.0",
+    # Windows ships no IANA tz database; pyarrow's TimestampScalar.as_py
+    # falls back to zoneinfo and fails without tzdata.
+    "tzdata; sys_platform == 'win32'",
 ]
 
 [project.optional-dependencies]

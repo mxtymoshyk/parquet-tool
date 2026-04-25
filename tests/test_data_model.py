@@ -1,6 +1,3 @@
-import os
-import tempfile
-
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
@@ -28,17 +25,14 @@ class TestParquetTableModel:
         val = model.data(idx, Qt.ItemDataRole.DisplayRole)
         assert val == "1"
 
-    def test_data_none_value(self, qapp):
+    def test_data_none_value(self, qapp, tmp_path):
         table = pa.table({"col": [None, "a"]})
-        path = tempfile.mktemp(suffix=".parquet")
+        path = str(tmp_path / "none.parquet")
         pq.write_table(table, path)
-        try:
-            pf = ParquetFile(path)
-            m = ParquetTableModel(pf)
-            idx = m.index(0, 0)
-            assert m.data(idx, Qt.ItemDataRole.DisplayRole) == ""
-        finally:
-            os.unlink(path)
+        pf = ParquetFile(path)
+        m = ParquetTableModel(pf)
+        idx = m.index(0, 0)
+        assert m.data(idx, Qt.ItemDataRole.DisplayRole) == ""
 
     def test_data_alignment_numeric(self, model):
         # value column (float)

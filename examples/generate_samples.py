@@ -191,7 +191,9 @@ def main() -> None:
     p2 = write(v2, "orders_v2.parquet")
     for p in (p1, p2):
         meta = pq.read_metadata(p)
-        print(f"{p.name}: {meta.num_rows} rows, {meta.num_row_groups} row groups, {p.stat().st_size:,} bytes")
+        print(
+            f"{p.name}: {meta.num_rows} rows, {meta.num_row_groups} row groups, {p.stat().st_size:,} bytes"
+        )
 
 
 if __name__ == "__main__":

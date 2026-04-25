@@ -476,9 +476,9 @@ class ParquetViewer(QMainWindow):
         self._show_progress()
         worker = StatsWorker(self._pf, column_name)
         worker.progress.connect(self._on_progress)
-        worker.finished.connect(self._on_stats_finished)
+        worker.result.connect(self._on_stats_finished)
         worker.error.connect(self._on_stats_error)
-        worker.finished.connect(lambda _: self._hide_progress())
+        worker.result.connect(lambda _: self._hide_progress())
         worker.error.connect(lambda _: self._hide_progress())
         self._stats_worker = worker
         worker.start()
@@ -493,7 +493,7 @@ class ParquetViewer(QMainWindow):
         s = self._s
         top_n = s.top_n_spin.value()
         worker = DistributionWorker(self._pf, column_name, top_n)
-        worker.finished.connect(lambda dist: populate_distribution(s, dist))
+        worker.result.connect(lambda dist: populate_distribution(s, dist))
         worker.error.connect(
             lambda msg: self.status_bar.showMessage(f"Distribution error: {msg}", 5000)
         )
@@ -527,7 +527,7 @@ class ParquetViewer(QMainWindow):
             multi_filter=self._model._multi_filter,
         )
         worker.progress.connect(self._on_progress)
-        worker.finished.connect(self._on_export_finished)
+        worker.result.connect(self._on_export_finished)
         worker.error.connect(self._on_export_error)
         self._export_worker = worker
         worker.start()
@@ -560,6 +560,17 @@ class ParquetViewer(QMainWindow):
             self._active_worker.wait(2000)
         self._active_worker = None
 
+    def _cancel_all_workers(self):
+        # Any worker that outlives the viewer will fire its `.result` lambda
+        # against destroyed widgets → segfault on teardown. closeEvent must
+        # reap all of them, not just the search/filter one.
+        for attr in ("_active_worker", "_stats_worker", "_dist_worker", "_export_worker"):
+            w = getattr(self, attr, None)
+            if w is not None and w.isRunning():
+                w.cancel()
+                w.wait(2000)
+            setattr(self, attr, None)
+
     def _show_progress(self):
         self.progress_bar.setValue(0)
         self.progress_bar.setVisible(True)
@@ -583,7 +594,7 @@ class ParquetViewer(QMainWindow):
             limit=PAGE_SIZE,
         )
         worker.progress.connect(self._on_progress)
-        worker.finished.connect(self._on_search_finished)
+        worker.result.connect(self._on_search_finished)
         worker.error.connect(self._on_search_error)
         self._active_worker = worker
         self._pending_search_query = query
@@ -622,7 +633,7 @@ class ParquetViewer(QMainWindow):
             limit=PAGE_SIZE,
         )
         worker.progress.connect(self._on_progress)
-        worker.finished.connect(self._on_multi_filter_finished)
+        worker.result.connect(self._on_multi_filter_finished)
         worker.error.connect(self._on_search_error)
         self._active_worker = worker
         self._pending_multi_filter = (specs, join_mode)
@@ -695,6 +706,6 @@ class ParquetViewer(QMainWindow):
         self._settings.window_state = self.saveState()
 
     def closeEvent(self, event):
-        self._cancel_active_worker()
+        self._cancel_all_workers()
         self._save_settings()
         super().closeEvent(event)

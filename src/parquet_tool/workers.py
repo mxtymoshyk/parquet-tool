@@ -8,7 +8,7 @@ class SearchWorker(QThread):
     """Run search/filter in background, reporting progress per row group."""
 
     progress = pyqtSignal(int, int)
-    finished = pyqtSignal(object, int)
+    result = pyqtSignal(object, int)
     error = pyqtSignal(str)
 
     def __init__(self, pf, query=None, column_filter=None, offset=0, limit=1000):
@@ -50,7 +50,7 @@ class SearchWorker(QThread):
                 total = self._pf.num_rows
 
             if not self._cancelled:
-                self.finished.emit(table, total)
+                self.result.emit(table, total)
         except Exception as e:
             if not self._cancelled:
                 self.error.emit(str(e))
@@ -65,7 +65,7 @@ class MultiFilterWorker(QThread):
     """Run multi-condition filter in background."""
 
     progress = pyqtSignal(int, int)
-    finished = pyqtSignal(object, int)
+    result = pyqtSignal(object, int)
     error = pyqtSignal(str)
 
     def __init__(self, pf, filter_specs, join_mode="AND", offset=0, limit=1000):
@@ -91,7 +91,7 @@ class MultiFilterWorker(QThread):
                 cancelled_fn=lambda: self._cancelled,
             )
             if not self._cancelled:
-                self.finished.emit(table, total)
+                self.result.emit(table, total)
         except Exception as e:
             if not self._cancelled:
                 self.error.emit(str(e))
@@ -106,7 +106,7 @@ class StatsWorker(QThread):
     """Compute column statistics in background."""
 
     progress = pyqtSignal(int, int)
-    finished = pyqtSignal(object)
+    result = pyqtSignal(object)
     error = pyqtSignal(str)
 
     def __init__(self, pf, column_name):
@@ -122,7 +122,7 @@ class StatsWorker(QThread):
         try:
             stats = self._pf.get_column_statistics(self._column_name)
             if not self._cancelled:
-                self.finished.emit(stats)
+                self.result.emit(stats)
         except Exception as e:
             if not self._cancelled:
                 self.error.emit(str(e))
@@ -133,7 +133,7 @@ class StatsWorker(QThread):
 class DistributionWorker(QThread):
     """Compute value distribution in background."""
 
-    finished = pyqtSignal(object)
+    result = pyqtSignal(object)
     error = pyqtSignal(str)
 
     def __init__(self, pf, column_name, top_n=20):
@@ -145,7 +145,7 @@ class DistributionWorker(QThread):
     def run(self):
         try:
             dist = self._pf.get_value_distribution(self._column_name, self._top_n)
-            self.finished.emit(dist)
+            self.result.emit(dist)
         except Exception as e:
             self.error.emit(str(e))
         finally:
@@ -156,7 +156,7 @@ class ExportWorker(QThread):
     """Export CSV in background with progress."""
 
     progress = pyqtSignal(int, int)
-    finished = pyqtSignal(str)
+    result = pyqtSignal(str)
     error = pyqtSignal(str)
 
     def __init__(self, pf, file_path, search_query="", column_filter=None, multi_filter=None):
@@ -191,7 +191,7 @@ class ExportWorker(QThread):
                     self.progress.emit(rg_idx + 1, total)
 
             if not self._cancelled:
-                self.finished.emit(self._file_path)
+                self.result.emit(self._file_path)
         except Exception as e:
             if not self._cancelled:
                 self.error.emit(str(e))
