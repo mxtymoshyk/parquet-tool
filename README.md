@@ -21,6 +21,38 @@ A PyQt6 desktop GUI for inspecting, filtering, and diffing Apache Parquet files.
 - **Nested data viewer** -- double-click struct/list/map cells to drill in
 - **Multi-file tabs**, **dark/light theme**, **drag-and-drop**, **persistent settings**, **CLI launch**
 
+## Screenshots
+
+### Data tab
+
+Paginated row viewer with per-column filters, search, and an inline JSON pane for the selected row.
+
+![Data tab](docs/screenshots/data-tab-row-json.png)
+
+### Schema tab
+
+Nested struct/list/map types expand inline; nullability shown per field.
+
+![Schema tab](docs/screenshots/schema-tab.png)
+
+### Metadata tab
+
+File-level metadata, row group rows, and per-column chunk stats (compression, min/max, null counts, sizes).
+
+![Metadata tab](docs/screenshots/metadata-tab.png)
+
+### Statistics tab
+
+Per-column stats (count, nulls, uniques, min/max/mean) plus top-N value distribution.
+
+![Statistics tab](docs/screenshots/statistics-tab.png)
+
+### Schema diff
+
+Side-by-side schema compare with color-coded ADDED / REMOVED / CHANGED rows.
+
+![Schema diff](docs/screenshots/schema-diff.png)
+
 ## Install
 
 ```bash
